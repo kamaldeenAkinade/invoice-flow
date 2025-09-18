@@ -36,33 +36,28 @@ const App: React.FC = () => {
     setIsDownloading(true);
     
     const options = {
-      margin: 0.5,
       filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2,
         useCORS: true,
-        scrollY: -window.scrollY,
-        windowHeight: document.documentElement.scrollHeight,
-        height: document.documentElement.scrollHeight
+        width: 793, // A4 width in pixels at 96 DPI
+        height: 1122, // A4 height in pixels at 96 DPI
       },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait'
+      }
     };
 
     try {
-      const pdf = await window.html2pdf().from(element).set(options).outputPdf();
-      const blob = new Blob([pdf], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = options.filename;
-      a.click();
-      URL.revokeObjectURL(url);
+      const pdf = await window.html2pdf().from(element).set(options).save();
       setIsDownloading(false);
-      return blob; // Return the blob for sharing
+      return pdf;
     } catch (error) {
-      setIsDownloading(false);
       console.error('Error generating PDF:', error);
+      setIsDownloading(false);
     }
   };
 
@@ -72,26 +67,47 @@ const App: React.FC = () => {
       if (!element) return;
 
       setIsDownloading(true);
-      const pdf = await handleDownload();
-      
-      if (pdf && navigator.share) {
-        const file = new File([pdf], `${invoiceData.invoiceNumber || 'invoice'}.pdf`, {
+
+      const options = {
+        filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          width: 793,
+          height: 1122,
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait'
+        }
+      };
+
+      const pdf = await window.html2pdf().from(element).set(options).outputPdf();
+
+      if (navigator.share) {
+        const blob = new Blob([pdf], { type: 'application/pdf' });
+        const file = new File([blob], options.filename, {
           type: 'application/pdf',
         });
 
-        await navigator.share({
-          title: `Invoice ${invoiceData.invoiceNumber}`,
-          text: `Invoice from ${invoiceData.businessName}`,
-          files: [file]
-        }).catch((error) => {
-          // Fallback for devices that don't support file sharing
+        try {
+          await navigator.share({
+            title: `Invoice ${invoiceData.invoiceNumber}`,
+            text: `Invoice from ${invoiceData.businessName}`,
+            files: [file]
+          });
+        } catch (error) {
           if (error.name === 'NotAllowedError') {
-            navigator.share({
+            await navigator.share({
               title: `Invoice ${invoiceData.invoiceNumber}`,
               text: `Invoice from ${invoiceData.businessName}`,
             });
+          } else {
+            throw error;
           }
-        });
+        }
       }
     } catch (error) {
       console.error('Error sharing:', error);
@@ -172,8 +188,10 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <div className="hidden print-area fixed top-0 left-0 w-full min-h-screen bg-white">
-         <InvoicePreview containerId="invoice-to-download" invoiceData={invoiceData} subtotal={subtotal} taxAmount={taxAmount} total={total} />
+      <div id="pdf-container" style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+         <div style={{ width: '210mm', minHeight: '297mm', padding: '20mm', backgroundColor: 'white' }}>
+           <InvoicePreview containerId="invoice-to-download" invoiceData={invoiceData} subtotal={subtotal} taxAmount={taxAmount} total={total} />
+         </div>
       </div>
     </div>
   );
