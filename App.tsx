@@ -142,6 +142,66 @@ const App: React.FC = () => {
     }
   };
 
+  // Generate a PDF Blob from an element (same slicing logic as generatePDF but returns Blob)
+  const generatePDFBlob = async (element: HTMLElement): Promise<Blob> => {
+    try {
+      console.log('Starting PDF Blob generation...');
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const pdf = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+      const PDF_WIDTH = pdf.internal.pageSize.getWidth();
+      const PDF_HEIGHT = pdf.internal.pageSize.getHeight();
+
+      const pxToPt = (px: number) => (px * 72) / 96;
+      const canvasWidthPt = pxToPt(canvas.width);
+      const canvasHeightPt = pxToPt(canvas.height);
+      const scale = Math.min(1, PDF_WIDTH / canvasWidthPt);
+
+      const pageHeightPx = Math.floor((PDF_HEIGHT / pxToPt(1)) / scale);
+      const totalPages = Math.ceil(canvas.height / pageHeightPx);
+
+      for (let page = 0; page < totalPages; page++) {
+        const sourceY = page * pageHeightPx;
+        const sliceHeight = Math.min(pageHeightPx, canvas.height - sourceY);
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+        const ctx = pageCanvas.getContext('2d');
+        if (!ctx) throw new Error('Could not get canvas context for blob generation');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        ctx.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+
+        const imgData = pageCanvas.toDataURL('image/jpeg', 1.0);
+        const imgWidthPt = pxToPt(pageCanvas.width) * scale;
+        const imgHeightPt = pxToPt(pageCanvas.height) * scale;
+        const x = (PDF_WIDTH - imgWidthPt) / 2;
+        const y = 0;
+
+        const coords = [x, y, imgWidthPt, imgHeightPt];
+        if (!coords.every((n) => Number.isFinite(n) && !Number.isNaN(n) && n >= 0)) {
+          throw new Error('Invalid numeric coordinates for addImage when generating blob: ' + coords.join(','));
+        }
+
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', x, y, imgWidthPt, imgHeightPt);
+      }
+
+      const blob = pdf.output('blob');
+      console.log('PDF Blob generated, size:', (blob as Blob).size);
+      return blob as Blob;
+    } catch (err) {
+      console.error('Error generating PDF blob:', err);
+      throw err;
+    }
+  };
+
   const handleDownload = async () => {
     const element = document.getElementById('invoice-to-download');
     if (!element) {
@@ -192,48 +252,60 @@ const App: React.FC = () => {
     setIsDownloading(true);
     element.style.display = 'block';
 
+  try {
+    // Clone the hidden invoice, render to Blob, then share the Blob via Web Share API
+    let clone: HTMLElement | null = null;
     try {
-        const opt = {
-            margin: 10,
-            filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { 
-                scale: 2,
-                useCORS: true,
-                logging: true,
-                onclone: function(clonedDoc) {
-                    const element = clonedDoc.getElementById('invoice-to-download');
-                    if (element) {
-                        element.style.display = 'block';
-                    }
-                }
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+      clone = element.cloneNode(true) as HTMLElement;
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.display = 'block';
+      clone.style.width = '210mm';
+      clone.style.backgroundColor = 'white';
+      clone.style.padding = '10mm';
+      clone.style.margin = '0';
+      document.body.appendChild(clone);
+      // allow layout/fonts/images to settle
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 150)));
 
-        const pdf = await window.html2pdf().set(opt).from(element).outputPdf();
+      const blob = await generatePDFBlob(clone);
+      console.log('Generated blob for sharing, size:', blob.size);
 
-        if (navigator.share) {
-            const blob = new Blob([pdf], { type: 'application/pdf' });
-            const file = new File([blob], opt.filename, { type: 'application/pdf' });
-
-            try {
-                await navigator.share({
-                    title: `Invoice ${invoiceData.invoiceNumber}`,
-                    text: `Invoice from ${invoiceData.businessName}`,
-                    files: [file]
-                });
-            } catch (error) {
-        if (error.name === 'NotAllowedError') {
+      if (navigator.canShare && navigator.canShare({ files: [new File([blob], `${invoiceData.invoiceNumber || 'invoice'}.pdf`, { type: 'application/pdf' })] })) {
+        const file = new File([blob], `${invoiceData.invoiceNumber || 'invoice'}.pdf`, { type: 'application/pdf' });
+        try {
           await navigator.share({
             title: `Invoice ${invoiceData.invoiceNumber}`,
             text: `Invoice from ${invoiceData.businessName}`,
+            files: [file]
           });
-        } else {
-          throw error;
+        } catch (shareErr) {
+          console.warn('Share failed, falling back to save:', shareErr);
+          // fallback to saving file
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${invoiceData.invoiceNumber || 'invoice'}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
         }
-            }
-        }
+      } else {
+        // navigator.share not available or cannot share files; fallback to download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${invoiceData.invoiceNumber || 'invoice'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
+    }
     } catch (error) {
         console.error('Error sharing:', error);
     } finally {
