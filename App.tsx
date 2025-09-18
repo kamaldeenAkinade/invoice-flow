@@ -73,7 +73,9 @@ const App: React.FC = () => {
       const pdfArrayBuffer = await generatePDF(previewArea);
       
       // Create Blob and download
-      const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' });
+      // Convert `pdfArrayBuffer` to a standard `ArrayBuffer` for compatibility
+      const arrayBuffer = pdfArrayBuffer.buffer instanceof ArrayBuffer ? pdfArrayBuffer.buffer : new ArrayBuffer(pdfArrayBuffer.length);
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -120,9 +122,7 @@ const App: React.FC = () => {
 
       if (navigator.share) {
         const blob = new Blob([pdf], { type: 'application/pdf' });
-        const file = new File([blob], opt.filename, {
-          type: 'application/pdf',
-        });
+        const file = new File([blob], opt.filename, { type: 'application/pdf' });
 
         try {
           await navigator.share({
