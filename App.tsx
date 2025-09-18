@@ -29,6 +29,29 @@ const App: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
+  const generatePDF = async (element: HTMLElement): Promise<Uint8Array> => {
+    const worker = await window.html2pdf()
+      .set({
+        margin: [10, 10, 10, 10],
+        filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          logging: true
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        }
+      })
+      .from(element);
+    
+    return worker.outputPdf('arraybuffer');
+  };
+
   const handleDownload = async () => {
     const element = document.getElementById('invoice-to-download');
     if (!element) return;
@@ -36,63 +59,37 @@ const App: React.FC = () => {
     setIsDownloading(true);
 
     try {
-      // First, create a temporary container
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      document.body.appendChild(container);
+      // Make sure preview is visible during capture
+      const previewArea = document.createElement('div');
+      previewArea.style.position = 'fixed';
+      previewArea.style.top = '0';
+      previewArea.style.left = '0';
+      previewArea.style.width = '210mm';
+      previewArea.style.backgroundColor = 'white';
+      previewArea.style.zIndex = '-1000';
+      previewArea.appendChild(element.cloneNode(true));
+      document.body.appendChild(previewArea);
 
-      // Clone the invoice content
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.display = 'block';
-      clone.style.width = '210mm';
-      clone.style.padding = '10mm';
-      clone.style.backgroundColor = 'white';
-      container.appendChild(clone);
-
-      // Wait for images to load
-      await Promise.all(
-        Array.from(clone.getElementsByTagName('img')).map(
-          (img: HTMLImageElement) =>
-            new Promise((resolve) => {
-              if (img.complete) resolve(null);
-              else img.onload = () => resolve(null);
-            })
-        )
-      );
-
-      // Wait a moment for rendering
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const opt = {
-        margin: 0,
-        filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          scrollY: 0,
-          windowWidth: 794, // A4 width in pixels
-          windowHeight: 1123, // A4 height in pixels
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          hotfixes: ['px_scaling']
-        }
-      };
-
-      await window.html2pdf().from(clone).set(opt).save();
-
+      // Generate PDF
+      const pdfArrayBuffer = await generatePDF(previewArea);
+      
+      // Create Blob and download
+      const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${invoiceData.invoiceNumber || 'invoice'}.pdf`;
+      link.click();
+      
       // Cleanup
-      document.body.removeChild(container);
-      setIsDownloading(false);
+      URL.revokeObjectURL(url);
+      document.body.removeChild(previewArea);
     } catch (error) {
       console.error('Error generating PDF:', error);
+    } finally {
       setIsDownloading(false);
     }
+  };
   };
 
   const handleShare = async () => {
