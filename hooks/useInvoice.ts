@@ -25,8 +25,7 @@ export const useInvoice = () => {
         invoiceDate: getTodayDate(),
         dueDate: getDueDate(),
         items: [
-            { id: nanoid(), description: 'Website Design', quantity: 1, price: 2500 },
-            { id: nanoid(), description: 'Hosting (1 year)', quantity: 1, price: 300 },
+            { id: nanoid(), description: 'Item Description', quantity: 1, price: 0 },
         ],
         taxRate: 8,
         notes: 'Thank you for your business!',

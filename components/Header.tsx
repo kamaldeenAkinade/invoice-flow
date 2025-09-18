@@ -17,7 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ onDownload, isDownloading }) => 
                         <Icon name="receipt" className="w-6 h-6" />
                     </div>
                     <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-                        Quick Invoice
+                        Kwik Invoice
                     </h1>
                 </div>
                 <div className="flex items-center gap-2">

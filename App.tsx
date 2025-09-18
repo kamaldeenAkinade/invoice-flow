@@ -107,8 +107,9 @@ const App: React.FC = () => {
       {/* Mobile Sticky Footer */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 border-t border-gray-200 shadow-[0_-2px_5px_rgba(0,0,0,0.05)] flex items-center gap-3 z-20">
         {mobileView === 'form' ? (
-            <ActionButton onClick={() => setMobileView('preview')} className="w-full">
-                <span>Preview Invoice</span>
+            <ActionButton onClick={handleDownload} disabled={isDownloading} className="w-full">
+                <Icon name="download" className="w-5 h-5" />
+                <span>{isDownloading ? 'Generating...' : 'Generate Invoice'}</span>
             </ActionButton>
         ) : (
             <>
