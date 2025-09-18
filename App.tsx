@@ -29,66 +29,79 @@ const App: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     const element = document.getElementById('invoice-to-download');
     if (!element) return;
 
     setIsDownloading(true);
+
+    // Show the element during capture
+    element.style.display = 'block';
     
-    const options = {
+    const opt = {
+      margin: 10,
       filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'jpeg', quality: 1 },
       html2canvas: { 
         scale: 2,
         useCORS: true,
-        width: 793, // A4 width in pixels at 96 DPI
-        height: 1122, // A4 height in pixels at 96 DPI
+        logging: true,
+        onclone: function(clonedDoc) {
+          const element = clonedDoc.getElementById('invoice-to-download');
+          if (element) {
+            element.style.display = 'block';
+          }
+        }
       },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait'
-      }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    try {
-      const pdf = await window.html2pdf().from(element).set(options).save();
-      setIsDownloading(false);
-      return pdf;
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      setIsDownloading(false);
-    }
+    window.html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .then(() => {
+        setIsDownloading(false);
+        element.style.display = 'none';
+      })
+      .catch((error) => {
+        console.error('Error generating PDF:', error);
+        setIsDownloading(false);
+        element.style.display = 'none';
+      });
   };
 
   const handleShare = async () => {
+    const element = document.getElementById('invoice-to-download');
+    if (!element) return;
+
+    setIsDownloading(true);
+    element.style.display = 'block';
+
     try {
-      const element = document.getElementById('invoice-to-download');
-      if (!element) return;
-
-      setIsDownloading(true);
-
-      const options = {
+      const opt = {
+        margin: 10,
         filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
           scale: 2,
           useCORS: true,
-          width: 793,
-          height: 1122,
+          logging: true,
+          onclone: function(clonedDoc) {
+            const element = clonedDoc.getElementById('invoice-to-download');
+            if (element) {
+              element.style.display = 'block';
+            }
+          }
         },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait'
-        }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      const pdf = await window.html2pdf().from(element).set(options).outputPdf();
+      const pdf = await window.html2pdf().set(opt).from(element).outputPdf();
 
       if (navigator.share) {
         const blob = new Blob([pdf], { type: 'application/pdf' });
-        const file = new File([blob], options.filename, {
+        const file = new File([blob], opt.filename, {
           type: 'application/pdf',
         });
 
@@ -113,6 +126,7 @@ const App: React.FC = () => {
       console.error('Error sharing:', error);
     } finally {
       setIsDownloading(false);
+      element.style.display = 'none';
     }
   };
 
@@ -188,10 +202,10 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <div id="pdf-container" style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-         <div style={{ width: '210mm', minHeight: '297mm', padding: '20mm', backgroundColor: 'white' }}>
-           <InvoicePreview containerId="invoice-to-download" invoiceData={invoiceData} subtotal={subtotal} taxAmount={taxAmount} total={total} />
-         </div>
+      <div className="hidden">
+        <div id="invoice-to-download" className="bg-white" style={{ width: '210mm', margin: '0 auto' }}>
+          <InvoicePreview invoiceData={invoiceData} subtotal={subtotal} taxAmount={taxAmount} total={total} />
+        </div>
       </div>
     </div>
   );
