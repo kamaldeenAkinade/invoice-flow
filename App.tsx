@@ -134,8 +134,8 @@ const App: React.FC = () => {
 
 
   return (
-    <div className="bg-gray-100 min-h-screen font-sans antialiased text-gray-800">
-      <div id="app-container" className="no-print pb-24 lg:pb-0">
+    <div className="bg-gray-100 min-h-screen font-sans antialiased text-gray-800 pb-24 lg:pb-0">
+      <div id="app-container" className="no-print">
         <Header onDownload={handleDownload} isDownloading={isDownloading} />
         <main className="p-4 md:p-8 lg:p-12">
           {/* Mobile View Switcher */}
@@ -181,26 +181,29 @@ const App: React.FC = () => {
         </main>
       </div>
       
-      {/* Mobile Sticky Footer */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 border-t border-gray-200 shadow-[0_-2px_5px_rgba(0,0,0,0.05)] flex items-center gap-3 z-20">
+      {/* Mobile Fixed Footer */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex items-center gap-3 z-50">
         {mobileView === 'form' ? (
-            <ActionButton onClick={() => setMobileView('preview')} className="w-full">
+            <ActionButton onClick={() => setMobileView('preview')} className="w-full py-3">
                 <Icon name="preview" className="w-5 h-5" />
-                <span>Generate Invoice</span>
+                <span>Generate {invoiceData.type === 'invoice' ? 'Invoice' : 'Receipt'}</span>
             </ActionButton>
         ) : (
             <>
-                <ActionButton onClick={handleDownload} disabled={isDownloading} className="flex-1">
+                <ActionButton onClick={handleDownload} disabled={isDownloading} className="flex-1 py-3">
                     <Icon name="download" className="w-5 h-5" />
-                    <span>{isDownloading ? 'Downloading' : 'Download'}</span>
+                    <span>{isDownloading ? 'Generating...' : 'Download'}</span>
                 </ActionButton>
-                <ActionButton onClick={handleShare} variant="secondary">
+                <ActionButton onClick={handleShare} variant="secondary" className="flex-1 py-3">
                      <Icon name="share" className="w-5 h-5" />
                      <span>Share</span>
                 </ActionButton>
             </>
         )}
       </div>
+
+      {/* Add padding at the bottom to prevent content from being hidden behind fixed footer */}
+      <div className="lg:hidden h-20"></div>
 
       <div className="hidden">
         <div id="invoice-to-download" className="bg-white" style={{ width: '210mm', margin: '0 auto' }}>
