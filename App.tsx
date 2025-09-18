@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { InvoiceForm } from './components/InvoiceForm';
@@ -89,7 +88,6 @@ const App: React.FC = () => {
     } finally {
       setIsDownloading(false);
     }
-  };
   };
 
   const handleShare = async () => {
