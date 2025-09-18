@@ -15,7 +15,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData, sub
   };
 
   return (
-    <div id={containerId || "invoice-preview"} className="p-8 bg-white rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200">
+    <div id={containerId || "invoice-preview"} className="p-8 bg-white rounded-lg shadow-lg max-w-4xl mx-auto border border-gray-200 min-h-[29.7cm]">
       <header className="flex justify-between items-start pb-6 border-b-2 border-gray-100">
         <div>
           {invoiceData.businessLogo && (

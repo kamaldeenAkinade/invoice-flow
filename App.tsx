@@ -29,7 +29,7 @@ const App: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const element = document.getElementById('invoice-to-download');
     if (!element) return;
 
@@ -39,21 +39,68 @@ const App: React.FC = () => {
       margin: 0.5,
       filename: `${invoiceData.invoiceNumber || 'invoice'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY,
+        windowHeight: document.documentElement.scrollHeight,
+        height: document.documentElement.scrollHeight
+      },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    window.html2pdf().from(element).set(options).save().then(() => {
+    try {
+      const pdf = await window.html2pdf().from(element).set(options).outputPdf();
+      const blob = new Blob([pdf], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = options.filename;
+      a.click();
+      URL.revokeObjectURL(url);
       setIsDownloading(false);
-    }).catch(() => {
+      return blob; // Return the blob for sharing
+    } catch (error) {
       setIsDownloading(false);
-    });
+      console.error('Error generating PDF:', error);
+    }
   };
 
-  const handleShare = () => {
-    // A real implementation would generate a PDF and use the Web Share API.
-    alert('Share functionality coming soon!');
+  const handleShare = async () => {
+    try {
+      const element = document.getElementById('invoice-to-download');
+      if (!element) return;
+
+      setIsDownloading(true);
+      const pdf = await handleDownload();
+      
+      if (pdf && navigator.share) {
+        const file = new File([pdf], `${invoiceData.invoiceNumber || 'invoice'}.pdf`, {
+          type: 'application/pdf',
+        });
+
+        await navigator.share({
+          title: `Invoice ${invoiceData.invoiceNumber}`,
+          text: `Invoice from ${invoiceData.businessName}`,
+          files: [file]
+        }).catch((error) => {
+          // Fallback for devices that don't support file sharing
+          if (error.name === 'NotAllowedError') {
+            navigator.share({
+              title: `Invoice ${invoiceData.invoiceNumber}`,
+              text: `Invoice from ${invoiceData.businessName}`,
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
+
+
 
 
   return (
@@ -107,9 +154,9 @@ const App: React.FC = () => {
       {/* Mobile Sticky Footer */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 border-t border-gray-200 shadow-[0_-2px_5px_rgba(0,0,0,0.05)] flex items-center gap-3 z-20">
         {mobileView === 'form' ? (
-            <ActionButton onClick={handleDownload} disabled={isDownloading} className="w-full">
-                <Icon name="download" className="w-5 h-5" />
-                <span>{isDownloading ? 'Generating...' : 'Generate Invoice'}</span>
+            <ActionButton onClick={() => setMobileView('preview')} className="w-full">
+                <Icon name="preview" className="w-5 h-5" />
+                <span>Generate Invoice</span>
             </ActionButton>
         ) : (
             <>
@@ -125,7 +172,7 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <div className="hidden print-area">
+      <div className="hidden print-area fixed top-0 left-0 w-full min-h-screen bg-white">
          <InvoicePreview containerId="invoice-to-download" invoiceData={invoiceData} subtotal={subtotal} taxAmount={taxAmount} total={total} />
       </div>
     </div>

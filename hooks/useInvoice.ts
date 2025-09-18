@@ -27,9 +27,9 @@ export const useInvoice = () => {
         items: [
             { id: nanoid(), description: 'Item Description', quantity: 1, price: 0 },
         ],
-        taxRate: 8,
+        taxRate: 0,
         notes: 'Thank you for your business!',
-        currency: '$',
+        currency: '₦',
     });
 
     const updateField = useCallback(<K extends keyof InvoiceData>(field: K, value: InvoiceData[K]) => {
