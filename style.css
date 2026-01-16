@@ -1,0 +1,649 @@
+:root {
+    --primary-color: #0f172a;
+    /* Slate 900 */
+    --primary-light: #1e293b;
+    /* Slate 800 */
+    --accent-color: #3b82f6;
+    /* Blue 500 */
+    --accent-hover: #2563eb;
+    /* Blue 600 */
+    --text-main: #334155;
+    --text-light: #64748b;
+    --bg-app: #f1f5f9;
+    /* Slate 100 */
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --bg-input: #f8fafc;
+    --border-input: #e2e8f0;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout --- */
+.app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 0;
+    margin-bottom: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: -0.02em;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+}
+
+/* --- Components --- */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.card-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+/* --- Form Elements --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+input,
+textarea,
+select {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background: var(--bg-input);
+    color: var(--text-main);
+    resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+
+
+/* --- Buttons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.2);
+}
+
+.btn-primary:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn-danger {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.btn-danger:hover {
+    background: #fecaca;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: #e2e8f0;
+    color: var(--primary-color);
+}
+
+/* --- Items List --- */
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-title h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.item-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.item-row:hover {
+    border-color: var(--border-color);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 640px) {
+    .item-row {
+        grid-template-columns: 3fr 1fr 1.5fr auto;
+        align-items: center;
+    }
+}
+
+.item-remove {
+    margin-top: 0.5rem;
+    color: var(--danger-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.item-remove:hover {
+    opacity: 1;
+}
+
+/* --- Preview Section --- */
+.preview-section {
+    position: sticky;
+    top: 2rem;
+}
+
+.preview-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.paper-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 1.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.invoice-paper {
+    background: white;
+    padding: 40px;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-sm);
+    min-height: 800px;
+    /* A4-ish ratio */
+    min-width: 790px;
+    /* Force A4 width approx */
+    margin: 0 auto;
+    color: #1e293b;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Invoice Paper Styling (Clean & minimal for print) */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 1.5rem;
+}
+
+.inv-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.inv-number {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.inv-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.meta-item {
+    margin-bottom: 0.25rem;
+}
+
+.meta-item .label {
+    color: var(--text-light);
+    margin-right: 0.5rem;
+    font-weight: 500;
+}
+
+.meta-item .value {
+    font-weight: 600;
+}
+
+.invoice-parties {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    gap: 2rem;
+}
+
+.party h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.party .details {
+    white-space: pre-line;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.invoice-table th {
+    text-align: left;
+    padding: 0.75rem 0;
+    border-bottom: 2px solid #e2e8f0;
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.invoice-table td {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.invoice-table .col-desc {
+    width: 50%;
+}
+
+.invoice-table .col-qty {
+    width: 15%;
+    text-align: center;
+}
+
+.invoice-table .col-price {
+    width: 17.5%;
+    text-align: right;
+}
+
+.invoice-table .col-total {
+    width: 17.5%;
+    text-align: right;
+}
+
+.invoice-table th.col-qty {
+    text-align: center;
+}
+
+.invoice-table th.col-price {
+    text-align: right;
+}
+
+.invoice-table th.col-total {
+    text-align: right;
+}
+
+.invoice-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.totals-area {
+    width: 50%;
+    margin-bottom: 2rem;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.total-row.grand-total {
+    border-top: 2px solid var(--primary-color);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.invoice-notes {
+    width: 100%;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Animations included in responsiveness */
+/* --- Responsive Adjustments --- */
+@media (max-width: 1023px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    /* Hide Preview by default on mobile/tablet */
+    .preview-section {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-app);
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    /* Show when active */
+    .preview-section.active {
+        display: block;
+    }
+
+    .preview-container {
+        padding: 1rem;
+        padding-top: 5rem;
+        /* Space for mobile header */
+        min-height: 100vh;
+    }
+
+    /* Mobile Header */
+    .mobile-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border-color);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1001;
+        height: 60px;
+    }
+
+    .mobile-preview-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .mobile-fab-container {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(to top, var(--bg-app) 80%, transparent);
+        z-index: 900;
+        text-align: center;
+        /* Ensure it sits above other content but below modal */
+    }
+
+    .mobile-fab-container .btn {
+        width: 100%;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+        font-size: 1.1rem;
+        background: var(--primary-color);
+        /* Ensure contrast */
+        color: white;
+    }
+}
+
+@media (min-width: 1024px) {
+    .mobile-preview-header {
+        display: none;
+    }
+
+    .mobile-fab-container {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Form Grids stack on mobile */
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Item Row Stacking */
+    .item-row {
+        grid-template-columns: 1fr;
+        /* Stack vertically */
+        gap: 0.5rem;
+    }
+
+    .invoice-parties {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .totals-area {
+        width: 100%;
+    }
+}
+
+/* Scalable Preview Container */
+.paper-scroll-container {
+    width: 100%;
+    overflow: hidden;
+    /* No scroll bars, we scale instead */
+    display: flex;
+    justify-content: center;
+    /* Center the scaled paper */
+    background: transparent;
+    transition: height 0.3s ease;
+    /* Smooth height adj */
+    position: relative;
+    padding-bottom: 0;
+    border: none;
+}
+
+.invoice-paper {
+    background: white;
+    padding: 40px;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-sm);
+    min-height: 800px;
+    /* A4-ish ratio */
+    width: 790px;
+    min-width: 790px;
+    /* Fixed Layout Width for PDF consistency */
+    margin: 0 auto;
+    color: #1e293b;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+    transform-origin: top center;
+    /* Scale from top center */
+    transition: transform 0.3s ease;
+}
+
+.preview-container {
+    max-width: 100%;
+}

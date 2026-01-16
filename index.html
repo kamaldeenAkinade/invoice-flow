@@ -1,33 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kwik Invoice Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" src="/index.tsx"></script>
-    <style>
-      @media print {
-        body {
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        .no-print {
-          display: none !important;
-        }
-        .print-area {
-          display: block !important;
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Generate and download professional invoices and receipts in seconds. Simple, efficient, and free.">
+    <title>InvoiceFlow | Premium Invoice Generator</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <h1>InvoiceFlow</h1>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle" class="icon-btn" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="editor-section">
+                <!-- Invoice Form -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <h2>Details</h2>
+                    </div>
+
+                    <!-- Configuration Section -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="doc-type">Document Type</label>
+                            <select id="doc-type">
+                                <option value="invoice">Invoice</option>
+                                <option value="receipt">Receipt</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="currency">Currency</label>
+                            <select id="currency">
+                                <option value="USD">USD ($)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="NGN">NGN (₦)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="invoice-number">Document #</label>
+                            <input type="text" id="invoice-number" value="INV-001" placeholder="e.g. INV-001">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoice-date">Date</label>
+                            <input type="date" id="invoice-date">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="from-details">From (Your Details)</label>
+                            <textarea id="from-details" class="auto-resize" rows="3"
+                                placeholder="Company Name&#10;Address&#10;Email"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="to-details">To (Client Details)</label>
+                            <textarea id="to-details" class="auto-resize" rows="3"
+                                placeholder="Client Name&#10;Address&#10;Email"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="items-container">
+                        <div class="section-title">
+                            <h3>Items</h3>
+                            <button type="button" id="add-item-btn" class="btn btn-sm btn-secondary">
+                                <i class="fa-solid fa-plus"></i> Add Item
+                            </button>
+                        </div>
+                        <div class="items-list" id="items-list">
+                            <!-- Items will be injected here -->
+                        </div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="form-group full-width">
+                            <label for="notes">Notes / Payment Terms</label>
+                            <textarea id="notes" rows="2"
+                                placeholder="Payment due within 14 days. Thank you for your business!"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="preview-section" id="preview-section">
+                <!-- Mobile Preview Header (Close Button) -->
+                <div class="mobile-preview-header">
+                    <button id="close-preview-btn" class="icon-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <h3>Preview</h3>
+                    <div style="width: 40px;"></div> <!-- Spacer -->
+                </div>
+
+                <div class="preview-container">
+                    <div class="preview-toolbar">
+                        <h3>Preview</h3>
+                        <button id="download-btn" class="btn btn-primary">
+                            <i class="fa-solid fa-download"></i> Download PDF
+                        </button>
+                    </div>
+
+                    <!-- The actual printable/downloadable invoice Element -->
+                    <div class="paper-scroll-container">
+                        <div id="invoice-preview" class="invoice-paper">
+                            <div class="invoice-header">
+                                <div class="inv-brand">
+                                    <h1 class="inv-title">INVOICE</h1>
+                                    <div class="inv-number" id="preview-number">#INV-001</div>
+                                </div>
+                                <div class="inv-meta">
+                                    <div class="meta-item">
+                                        <span class="label">Date:</span>
+                                        <span class="value" id="preview-date">2023-10-27</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="invoice-parties">
+                                <div class="party from">
+                                    <h4>From:</h4>
+                                    <div class="details" id="preview-from">Company Name</div>
+                                </div>
+                                <div class="party to">
+                                    <h4>To:</h4>
+                                    <div class="details" id="preview-to">Client Name</div>
+                                </div>
+                            </div>
+
+                            <table class="invoice-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-desc">Description</th>
+                                        <th class="col-qty">Qty</th>
+                                        <th class="col-price">Price</th>
+                                        <th class="col-total">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview-items-body">
+                                    <!-- Preview Rows -->
+                                </tbody>
+                            </table>
+
+                            <div class="invoice-footer">
+                                <div class="totals-area">
+                                    <div class="total-row">
+                                        <span>Subtotal</span>
+                                        <span id="preview-subtotal">$0.00</span>
+                                    </div>
+                                    <div class="total-row grand-total">
+                                        <span>Total</span>
+                                        <span id="preview-total">$0.00</span>
+                                    </div>
+                                </div>
+                                <div class="invoice-notes" id="preview-notes">
+                                    Payment due within 14 days.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Mobile Floating Action Button -->
+        <div class="mobile-fab-container">
+            <button id="mobile-preview-btn" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-eye"></i> Preview & Download
+            </button>
+        </div>
+    </div>
+
+    <!-- HTML2PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  </body>
+    <script src="script.js"></script>
+</body>
+
 </html>
